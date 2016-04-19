@@ -22,7 +22,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/openblockchain/obc-peer/openchain/chaincode/shim"
 )
@@ -33,7 +32,7 @@ type SimpleChaincode struct {
 
 func (t *SimpleChaincode) init(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
+	var Aval, Bval string // Asset holdings
 	var err error
 
 	if len(args) != 4 {
@@ -42,24 +41,26 @@ func (t *SimpleChaincode) init(stub *shim.ChaincodeStub, args []string) ([]byte,
 
 	// Initialize the chaincode
 	A = args[0]
-	Aval, err = strconv.Atoi(args[1])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
+	Aval = args[1]
+//	Aval, err = strconv.Atoi(args[1])
+	//if err != nil {
+	//	return nil, errors.New("Expecting integer value for asset holding")
+	//}
 	B = args[2]
-	Bval, err = strconv.Atoi(args[3])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+	Bval =args[3]
+	//Bval, err = strconv.Atoi(args[3])
+	//if err != nil {
+	//	return nil, errors.New("Expecting integer value for asset holding")
+	//}
+	fmt.Printf("Aval = %s, Bval = %s\n", Aval, Bval)
 
 	// Write the state to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	err = stub.PutState(A, []byte(Aval))
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	err = stub.PutState(B, []byte(Bval))
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +71,12 @@ func (t *SimpleChaincode) init(stub *shim.ChaincodeStub, args []string) ([]byte,
 // Transaction makes payment of X units from A to B
 func (t *SimpleChaincode) invoke(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var X int          // Transaction value
+	
+	var Aval, Bval string // Asset holdings
+	//var X string          // Transaction value
 	var err error
 
-	if len(args) != 3 {
+	if len(args) != 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
 	}
 
@@ -90,7 +92,7 @@ func (t *SimpleChaincode) invoke(stub *shim.ChaincodeStub, args []string) ([]byt
 	if Avalbytes == nil {
 		return nil, errors.New("Entity not found")
 	}
-	Aval, _ = strconv.Atoi(string(Avalbytes))
+	//Aval, _ = strconv.Atoi(string(Avalbytes))
 
 	Bvalbytes, err := stub.GetState(B)
 	if err != nil {
@@ -99,21 +101,21 @@ func (t *SimpleChaincode) invoke(stub *shim.ChaincodeStub, args []string) ([]byt
 	if Bvalbytes == nil {
 		return nil, errors.New("Entity not found")
 	}
-	Bval, _ = strconv.Atoi(string(Bvalbytes))
+	//Bval, _ = strconv.Atoi(string(Bvalbytes))
 
 	// Perform the execution
-	X, err = strconv.Atoi(args[2])
-	Aval = Aval - X
-	Bval = Bval + X
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+//	X = args[2]
+	Aval = string(Bvalbytes[:])
+	Bval = string(Avalbytes[:])
+	fmt.Printf("Aval = %s, Bval = %s\n", Aval, Bval)
 
 	// Write the state back to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	err = stub.PutState(A, []byte(Aval))
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	err = stub.PutState(B, []byte(Bval))
 	if err != nil {
 		return nil, err
 	}
